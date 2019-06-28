@@ -1,0 +1,5 @@
+applications:
+- name: blog-info
+  buildpacks:
+  - https://github.com/cloudfoundry/staticfile-buildpack#v1.4.43
+  memory: 32m
