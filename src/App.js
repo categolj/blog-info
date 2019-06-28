@@ -9,8 +9,8 @@ function App() {
                 <Header/>
                 <article>
                     <Route exact path="/" component={Prod}/>
-                    <Route path="/info/prod" component={Prod}/>
-                    <Route path="/info/dev" component={Dev}/>
+                    <Route path="/prod" component={Prod}/>
+                    <Route path="/dev" component={Dev}/>
                 </article>
             </div>
         </Router>
@@ -40,7 +40,9 @@ class Info extends React.Component {
         this.header = props.header;
         this.state = {
             info: {
-                build: {},
+                build: {
+                    version: 'Loading ...'
+                },
                 maven: {
                     versions: {}
                 },
@@ -116,10 +118,10 @@ function Header() {
     return (
         <ul>
             <li>
-                <Link to="/info/prod">Prod</Link>
+                <Link to="/prod">Prod</Link>
             </li>
             <li>
-                <Link to="/info/dev">Dev</Link>
+                <Link to="/dev">Dev</Link>
             </li>
         </ul>
     );
