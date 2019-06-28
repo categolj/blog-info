@@ -5,63 +5,121 @@ function App() {
     return (
         <Router>
             <div>
+                <h1>Info</h1>
                 <Header/>
-
-                <Route exact path="/" component={Home}/>
-                <Route path="/about" component={About}/>
-                <Route path="/topics" component={Topics}/>
+                <article>
+                    <Route exact path="/" component={Prod}/>
+                    <Route path="/info/prod" component={Prod}/>
+                    <Route path="/info/dev" component={Dev}/>
+                </article>
             </div>
         </Router>
     );
 }
 
-function Home() {
-    return <h2>Home</h2>;
+function Prod() {
+    return <div>
+        <h2>Prod</h2>
+        <Info header={'UI'} url={'https://blog.ik.am'}/>
+        <Info header={'API'} url={'https://blog-api.ik.am'}/>
+    </div>;
 }
 
-function About() {
-    return <h2>About</h2>;
+function Dev() {
+    return <div>
+        <h2>Dev</h2>
+        <Info header={'UI'} url={'https://blog.k8s.bosh.tokyo'}/>
+        <Info header={'API'} url={'https://blog-api.k8s.bosh.tokyo'}/>
+    </div>;
 }
 
-function Topic({match}) {
-    return <h3>Requested Param: {match.params.id}</h3>;
-}
+class Info extends React.Component {
+    constructor(props) {
+        super(props);
+        this.url = props.url;
+        this.header = props.header;
+        this.state = {
+            info: {
+                build: {},
+                maven: {
+                    versions: {}
+                },
+                git: {
+                    commit: {
+                        id: {}
+                    },
+                    remote: {
+                        origin: {
+                            url: ''
+                        }
+                    }
+                }
+            }
+        };
+    }
 
-function Topics({match}) {
-    return (
-        <div>
-            <h2>Topics</h2>
+    componentDidMount() {
+        fetch(`${this.url}/actuator/info`)
+            .then(result => result.json())
+            .then(info => {
+                this.setState({
+                    info: info
+                });
+            })
+    }
 
-            <ul>
-                <li>
-                    <Link to={`${match.url}/components`}>Components</Link>
-                </li>
-                <li>
-                    <Link to={`${match.url}/props-v-state`}>Props v. State</Link>
-                </li>
-            </ul>
-
-            <Route path={`${match.path}/:id`} component={Topic}/>
-            <Route
-                exact
-                path={match.path}
-                render={() => <h3>Please select a topic.</h3>}
-            />
-        </div>
-    );
+    render() {
+        const info = this.state.info;
+        const rev = info.git.commit.id.abbrev;
+        const header = this.header;
+        return (
+            <div>
+                <h3><a href={this.url}>{header}</a></h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Version</th>
+                        <td>{info.build.version}</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th>Build Time</th>
+                        <td>{info.build.time}</td>
+                    </tr>
+                    <tr>
+                        <th>Source Code</th>
+                        <td><a href={info.git.remote.origin.url
+                            .replace('git@github.com:', 'https://github.com/')
+                            .replace('.git', `/tree/${rev}`)}
+                               target={'_blank'}><code>{rev}</code></a></td>
+                    </tr>
+                    <tr>
+                        <th>Spring Framework</th>
+                        <td>{info.maven.versions['spring-framework']}</td>
+                    </tr>
+                    <tr>
+                        <th>Spring Boot</th>
+                        <td>{info.maven.versions['spring-boot']}</td>
+                    </tr>
+                    <tr>
+                        <th>Spring Cloud</th>
+                        <td>{info.maven.versions['spring-cloud']}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>);
+    }
 }
 
 function Header() {
     return (
         <ul>
             <li>
-                <Link to="/">Home</Link>
+                <Link to="/info/prod">Prod</Link>
             </li>
             <li>
-                <Link to="/about">About</Link>
-            </li>
-            <li>
-                <Link to="/topics">Topics</Link>
+                <Link to="/info/dev">Dev</Link>
             </li>
         </ul>
     );
